@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 import { signIn, signUp } from '../services/authService';
 import { login, setGuest } from '../redux/slice/authSlice';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   
   const dispatch = useDispatch();
+  const { isDarkMode, colors } = useAppTheme();
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) {
@@ -73,110 +75,183 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
+  // Dynamic styles using inline styles
+  const containerStyle = {
+    flex: 1,
+    backgroundColor: colors.primary,
+  };
+
+  const surfaceStyle = {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 24,
+  };
+
+  const inputStyle = {
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    backgroundColor: isDarkMode ? '#111827' : '#F9FAFB',
+    color: colors.text,
+  };
+
+  const labelStyle = {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    marginBottom: 8,
+    color: colors.text,
+  };
+
+  const buttonStyle = {
+    backgroundColor: colors.primary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center' as const,
+    marginTop: 8,
+    opacity: loading ? 0.7 : 1,
+  };
+
+  const dividerStyle = {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  };
+
+  const guestButtonStyle = {
+    backgroundColor: isDarkMode ? '#374151' : '#F3F4F6',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center' as const,
+  };
+
+  const textStyle = {
+    color: colors.text,
+    fontWeight: '600' as const,
+  };
+
+  const secondaryTextStyle = {
+    color: colors.textSecondary,
+  };
+
+  const errorStyle = {
+    backgroundColor: isDarkMode ? '#7F1D1D' : '#FEF2F2',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  };
+
+  const errorTextStyle = {
+    color: colors.error,
+    fontSize: 14,
+    textAlign: 'center' as const,
+  };
+
   return (
     <KeyboardAvoidingView 
-      className="flex-1 bg-indigo-500"
+      style={containerStyle}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerClassName="flex-grow justify-center">
-        <View className="px-6">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+        <View style={{ paddingHorizontal: 24 }}>
           {/* Header */}
-          <View className="items-center mb-10">
+          <View style={{ alignItems: 'center', marginBottom: 40 }}>
             <MaterialIcons name="assignment" size={64} color="white" />
-            <Text className="text-3xl font-bold text-white text-center mt-4 mb-2">Personal Habit Tracker</Text>
-            <Text className="text-lg text-white/90 mb-2">
+            <Text style={{ fontSize: 28, fontWeight: 'bold' as const, color: 'white', textAlign: 'center', marginTop: 16, marginBottom: 8 }}>Habit Tracker</Text>
+            <Text style={{ fontSize: 18, color: 'rgba(255,255,255,0.9)', marginBottom: 8 }}>
               {isSignUp ? 'Create your account' : 'Welcome back!'}
             </Text>
-            <Text className="text-sm text-white/70">
+            <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
               Track your daily habits
             </Text>
           </View>
 
           {/* Form */}
-          <View className="bg-white rounded-2xl p-6">
-            <View className="mb-5">
-              <Text className="text-base font-semibold text-gray-700 mb-2">Email</Text>
+          <View style={surfaceStyle}>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={labelStyle}>Email</Text>
               <TextInput
-                className="border-2 border-gray-200 rounded-xl p-4 text-base text-gray-800 bg-gray-50"
+                style={inputStyle}
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.textSecondary}
               />
             </View>
 
-            <View className="mb-5">
-              <Text className="text-base font-semibold text-gray-700 mb-2">Password</Text>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={labelStyle}>Password</Text>
               <TextInput
-                className="border-2 border-gray-200 rounded-xl p-4 text-base text-gray-800 bg-gray-50"
+                style={inputStyle}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Enter your password"
                 secureTextEntry
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.textSecondary}
               />
             </View>
 
             {/* Error Message */}
             {error ? (
-              <View className="bg-red-100 p-3 rounded-lg mb-4">
-                <Text className="text-red-600 text-sm text-center">{error}</Text>
+              <View style={errorStyle}>
+                <Text style={errorTextStyle}>{error}</Text>
               </View>
             ) : null}
 
             {/* Submit Button */}
             <TouchableOpacity 
-              className={`bg-indigo-500 py-4 rounded-xl items-center mt-2 ${loading ? 'opacity-70' : ''}`}
+              style={buttonStyle}
               onPress={handleSubmit}
               disabled={loading}
             >
-              <Text className="text-white text-lg font-bold">
+              <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
                 {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
               </Text>
             </TouchableOpacity>
 
             {/* Toggle Sign In/Sign Up */}
             <TouchableOpacity 
-              className="mt-4 items-center"
+              style={{ marginTop: 16, alignItems: 'center' }}
               onPress={() => {
                 setIsSignUp(!isSignUp);
                 setError('');
               }}
             >
-              <Text className="text-indigo-500 text-base font-semibold">
+              <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '600' as const }}>
                 {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
               </Text>
             </TouchableOpacity>
 
             {/* Divider */}
-            <View className="flex-row items-center mt-6 mb-4">
-              <View className="flex-1 h-px bg-gray-200" />
-              <Text className="text-gray-400 mx-4 text-sm">OR</Text>
-              <View className="flex-1 h-px bg-gray-200" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 24, marginBottom: 16 }}>
+              <View style={dividerStyle} />
+              <Text style={[secondaryTextStyle, { marginHorizontal: 16, fontSize: 14 }]}>OR</Text>
+              <View style={dividerStyle} />
             </View>
 
             {/* Continue as Guest */}
             <TouchableOpacity 
-              className="bg-gray-100 py-4 rounded-xl items-center"
+              style={guestButtonStyle}
               onPress={handleGuestMode}
             >
-              <Text className="text-gray-700 text-base font-semibold">
+              <Text style={[textStyle, { fontSize: 16, fontWeight: '600' }]}>
                 Continue as Guest
               </Text>
             </TouchableOpacity>
             
-            <Text className="text-gray-400 text-xs text-center mt-3">
+            <Text style={[secondaryTextStyle, { fontSize: 12, textAlign: 'center', marginTop: 12 }]}>
               Guest data is stored locally. Sign up to sync across devices.
             </Text>
 
             {/* Footer */}
-            <View className="items-center mt-8 pb-5">
-              <Text className="text-gray-400 text-sm font-semibold">v1.0.0</Text>
-              <Text className="text-gray-400 text-xs mt-1">Created by Hamzah</Text>
-              <Text className="text-gray-400 text-xs mt-1">© 2026 - Personal Habit Tracking System</Text>
+            <View style={{ alignItems: 'center', marginTop: 32, paddingBottom: 20 }}>
+              <Text style={[secondaryTextStyle, { fontSize: 14, fontWeight: '600' }]}>v1.0.0</Text>
+              <Text style={[secondaryTextStyle, { fontSize: 12, marginTop: 4 }]}>Created by Hamzah</Text>
+              <Text style={[secondaryTextStyle, { fontSize: 12, marginTop: 4 }]}>© 2026 - Habit Tracking System</Text>
             </View>
           </View>
         </View>

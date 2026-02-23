@@ -9,6 +9,13 @@ export type HabitCategory =
   | 'fasting'      // Ramadan/specific days
   | 'charity'      // Zakat/Sadaqah
   | 'dhikr'        // Remembrances (Morning/Evening)
+  | 'worship'      // Worship & Spirituality
+  | 'health'       // Health & Fitness
+  | 'work'         // Work & Career
+  | 'personal'     // Personal Development
+  | 'social'       // Social & Relationships
+  | 'hobbies'      // Hobbies & Interests
+  | 'finance'      // Finance
   | 'other';       // Other habits
 
 // User types
@@ -141,6 +148,13 @@ export const CATEGORY_ICONS: Record<HabitCategory, string> = {
   fasting: '🌙',
   charity: '💝',
   dhikr: '✨',
+  worship: '🕌',
+  health: '🏃',
+  work: '💼',
+  personal: '🎓',
+  social: '👥',
+  hobbies: '🎨',
+  finance: '💰',
   other: '📝',
 };
 
@@ -151,5 +165,12 @@ export const CATEGORY_COLORS: Record<HabitCategory, string> = {
   fasting: '#f093fb',  // Pink
   charity: '#4facfe',  // Blue
   dhikr: '#ffd200',    // Gold/Yellow
-  other: '#667eea',    // Default
+  worship: '#667eea',
+  health: '#10B981',
+  work: '#3B82F6',
+  personal: '#8B5CF6',
+  social: '#EC4899',
+  hobbies: '#F59E0B',
+  finance: '#EF4444',
+  other: '#6B7280',    // Default
 };

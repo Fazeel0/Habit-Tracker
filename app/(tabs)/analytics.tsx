@@ -1,5 +1,6 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Platform } from 'react-native';
 import { useSelector } from 'react-redux';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { getPastNDays } from '../../utils/dateUtils';
 import { useAppTheme } from '../../hooks/useAppTheme';
@@ -7,7 +8,7 @@ import { useAppTheme } from '../../hooks/useAppTheme';
 export default function Analytics() {
   const { habits, completions } = useSelector((state: any) => state.habits);
   const { isGuest } = useSelector((state: any) => state.auth);
-  const { isDarkMode, colors, classes } = useAppTheme();
+  const { isDarkMode, colors } = useAppTheme();
 
   // Calculate stats
   const completedCount = completions.filter((c: any) => c.completed).length;
@@ -61,62 +62,102 @@ export default function Analytics() {
     });
   };
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <View className={`flex-1 ${classes.background}`}>
-      {/* Header */}
-      <View className={`px-5 pt-12 pb-5 ${classes.headerBg}`}>
-        <Text className="text-3xl font-bold text-white">Analytics</Text>
-        <Text className="text-sm text-white/80 mt-1">
-          {isGuest ? 'Guest Mode' : 'Track your progress'}
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
+      {/* Premium Header - Full Bleed */}
+      <View 
+        className="pb-5 px-6 overflow-hidden" 
+        style={{ backgroundColor: colors.primary, paddingTop: insets.top + 10 }}
+      >
+        {/* Background Decorations */}
+        <View className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20" style={{ backgroundColor: 'white' }} />
+        <View className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full opacity-10" style={{ backgroundColor: 'white' }} />
+
+        <Text className="text-3xl font-black text-white tracking-tighter">Analytics</Text>
+        <Text className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          {isGuest ? 'Blessed Guest' : 'Track your progress'}
         </Text>
       </View>
 
-      <ScrollView className="flex-1 p-4">
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ 
+          padding: 16,
+          paddingBottom: insets.bottom + 40 
+        }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Stats Grid */}
         <View className="flex-row flex-wrap justify-between mb-4">
-          <View className={`w-[48%] rounded-2xl p-5 mb-3 items-center ${classes.surface}`} style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 }}>
-            <Text className={`text-3xl font-bold ${classes.primaryText}`}>{stats.currentStreak}</Text>
+          <View 
+            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.currentStreak}</Text>
             <View className="flex-row items-center mt-1">
-              <Ionicons name="flame" size={16} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
-              <Text className={`text-sm mt-0.5 ${classes.textSecondary}`}> Day Streak</Text>
+              <Ionicons name="flame" size={16} color={colors.textSecondary} />
+              <Text className="text-sm mt-0.5 ml-1" style={{ color: colors.textSecondary }}>Day Streak</Text>
             </View>
           </View>
-          <View className={`w-[48%] rounded-2xl p-5 mb-3 items-center ${classes.surface}`} style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 }}>
-            <Text className={`text-3xl font-bold ${classes.primaryText}`}>{stats.weeklyProgress}</Text>
-            <Text className={`text-sm mt-1 ${classes.textSecondary}`}>This Week</Text>
+          <View 
+            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.weeklyProgress}</Text>
+            <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>This Week</Text>
           </View>
-          <View className={`w-[48%] rounded-2xl p-5 mb-3 items-center ${classes.surface}`} style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 }}>
-            <Text className={`text-3xl font-bold ${classes.primaryText}`}>{stats.totalCompletions}</Text>
-            <Text className={`text-sm mt-1 ${classes.textSecondary}`}>Total</Text>
+          <View 
+            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.totalCompletions}</Text>
+            <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>Total</Text>
           </View>
-          <View className={`w-[48%] rounded-2xl p-5 mb-3 items-center ${classes.surface}`} style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 }}>
-            <Text className={`text-3xl font-bold ${classes.primaryText}`}>{stats.completionRate}%</Text>
-            <Text className={`text-sm mt-1 ${classes.textSecondary}`}>Rate</Text>
+          <View 
+            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.completionRate}%</Text>
+            <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>Rate</Text>
           </View>
         </View>
 
         {/* Completion Rate */}
-        <View className={`rounded-2xl p-5 mb-4 ${classes.surface}`} style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 }}>
-          <Text className={`text-lg font-semibold mb-4 ${classes.text}`}>Overall Completion Rate</Text>
-          <View className={`h-3 rounded-lg overflow-hidden mb-2 ${classes.border}`}>
-            <View className="h-full rounded-lg" style={{ width: `${stats.completionRate}%`, backgroundColor: isDarkMode ? '#818cf8' : '#667eea' }} />
+        <View 
+          className="rounded-2xl p-5 mb-4 shadow-sm elevation-2"
+          style={{ backgroundColor: colors.surface }}
+        >
+          <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>Overall Completion Rate</Text>
+          <View className="h-3 rounded-full overflow-hidden mb-2" style={{ backgroundColor: colors.border }}>
+            <View 
+              className="h-full rounded-full" 
+              style={{ width: `${stats.completionRate}%`, backgroundColor: isDarkMode ? '#818cf8' : '#667eea' }} 
+            />
           </View>
-          <Text className={`text-sm text-right ${classes.textSecondary}`}>{stats.completionRate}% completed</Text>
+          <Text className="text-sm text-right" style={{ color: colors.textSecondary }}>{stats.completionRate}% completed</Text>
         </View>
 
         {/* Per-Habit Stats */}
-        <View className={`rounded-2xl p-5 mb-4 ${classes.surface}`} style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 }}>
-          <Text className={`text-lg font-semibold mb-4 ${classes.text}`}>Habit Performance (30 days)</Text>
-          {getHabitStats().map((habit, index) => (
+        <View 
+          className="rounded-2xl p-5 mb-4 shadow-sm elevation-2"
+          style={{ backgroundColor: colors.surface }}
+        >
+          <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>Habit Performance (30 days)</Text>
+          {getHabitStats().map((habit: any, index: number) => (
             <View key={index} className="flex-row items-center mb-3">
               <View className="w-[100px]">
-                <Text className={`text-sm font-semibold ${classes.text}`}>{habit.name}</Text>
-                <Text className={`text-xs ${classes.textSecondary}`}>{habit.completed}/30 days</Text>
+                <Text className="text-sm font-semibold" style={{ color: colors.text }}>{habit.name}</Text>
+                <Text className="text-xs" style={{ color: colors.textSecondary }}>{habit.completed}/30 days</Text>
               </View>
-              <View className={`flex-1 h-2 rounded-lg mx-3 overflow-hidden ${classes.border}`}>
-                <View className="h-full rounded-lg" style={{ width: `${habit.rate}%`, backgroundColor: isDarkMode ? '#34D399' : '#10B981' }} />
+              <View className="flex-1 h-2 rounded-full mx-3 overflow-hidden" style={{ backgroundColor: colors.border }}>
+                <View 
+                  className="h-full rounded-full" 
+                  style={{ width: `${habit.rate}%`, backgroundColor: isDarkMode ? '#34D399' : '#10B981' }} 
+                />
               </View>
-              <Text className={`w-10 text-sm font-semibold text-right ${classes.success}`}>{habit.rate}%</Text>
+              <Text className="w-10 text-sm font-semibold text-right" style={{ color: colors.success }}>{habit.rate}%</Text>
             </View>
           ))}
         </View>

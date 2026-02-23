@@ -1,18 +1,18 @@
-import { router } from 'expo-router';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
+import { PURGE } from 'redux-persist';
+import { useAppTheme } from '../../hooks/useAppTheme';
 import { logout, setGuest } from '../../redux/slice/authSlice';
 import { toggleTheme } from '../../redux/slice/themeSlice';
-import { resetHabits } from '../../redux/slice/habitsSlice';
 import { logOut } from '../../services/authService';
-import { useAppTheme } from '../../hooks/useAppTheme';
-import { PURGE } from 'redux-persist';
 
 export default function Profile() {
   const dispatch = useDispatch();
   const { user, isGuest } = useSelector((state: any) => state.auth);
-  const { isDarkMode, classes } = useAppTheme();
+  const { isDarkMode, colors } = useAppTheme();
 
   const handleLogout = () => {
     console.log('handleLogout called, isGuest:', isGuest);
@@ -81,130 +81,235 @@ export default function Profile() {
 
   const handleSwitchAccount = () => handleLogout();
 
+  const insets = useSafeAreaInsets();
+
+  const quranVerse = {
+    text: "So remember Me; I will remember you.",
+    surah: "Al-Baqarah 2:152"
+  };
+
+  const SettingItem = ({ icon, label, onPress, rightElement, color, isLast }: any) => (
+    <TouchableOpacity
+      className={`flex-row items-center py-4 ${!isLast ? 'border-b border-gray-100' : ''}`}
+      style={!isLast ? { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } : {}}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View 
+        className="w-10 h-10 rounded-xl items-center justify-center mr-4"
+        style={{ backgroundColor: color || (isDarkMode ? '#374151' : '#F3F4F6') }}
+      >
+        <Ionicons name={icon} size={20} color={color ? 'white' : colors.text} />
+      </View>
+      <Text className="flex-1 text-base font-semibold" style={{ color: colors.text }}>{label}</Text>
+      {rightElement || <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />}
+    </TouchableOpacity>
+  );
+
   const handleToggleDarkMode = () => dispatch(toggleTheme());
 
-  // Theme colors for dynamic styling
-  const bgColor = classes.background;
-  const surfaceColor = classes.surface;
-  const textColor = classes.text;
-  const textSecondary = classes.textSecondary;
-  const primaryColor = classes.primary;
-
   return (
-    <View className={`flex-1 ${bgColor}`}>
-      {/* Header */}
-      <View className={`${primaryColor} pt-12 pb-5 px-5`}>
-        <Text className="text-3xl font-bold text-white">Profile</Text>
-        <Text className="text-sm text-white/80 mt-1">Manage your account</Text>
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
+      {/* Premium Header - Full Bleed */}
+      <View 
+        className="pb-5 px-6 overflow-hidden" 
+        style={{ backgroundColor: colors.primary, paddingTop: insets.top + 10 }}
+      >
+        {/* Background Decorations */}
+        <View className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20" style={{ backgroundColor: 'white' }} />
+        <View className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full opacity-10" style={{ backgroundColor: 'white' }} />
+
+        <View className="flex-row justify-between items-center">
+          <View>
+            <Text className="text-3xl font-black text-white tracking-tighter">Profile</Text>
+            <Text className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>Manage your journey</Text>
+          </View>
+        </View>
       </View>
 
-      <ScrollView className="flex-1 p-4">
-        {/* User Info Card */}
-        <View className={`${surfaceColor} rounded-2xl p-6 items-center mb-5 shadow-md`}>
-          <View className={`${primaryColor} w-20 h-20 rounded-full items-center justify-center mb-3`}>
-            <Ionicons name="person" size={32} color="white" />
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ 
+          paddingHorizontal: 20, 
+          paddingTop: 20,
+          paddingBottom: insets.bottom + 40 
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* User Card - Premium Glassmorphism-lite */}
+        <View 
+          className="mb-6 rounded-[32px] overflow-hidden" 
+          style={{ 
+            backgroundColor: colors.primary,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.2,
+            shadowRadius: 15,
+            elevation: 10,
+          }}
+        >
+          <View className="p-6">
+            {/* Background Decorations */}
+            <View className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20" style={{ backgroundColor: 'white' }} />
+            <View className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full opacity-10" style={{ backgroundColor: 'white' }} />
+
+            <View className="flex-row items-center mb-6">
+              <View 
+                className="w-18 h-18 rounded-3xl items-center justify-center border-2 border-white/30"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)', width: 72, height: 72 }}
+              >
+                <Ionicons name="person" size={36} color="white" />
+              </View>
+              <View className="ml-4 flex-1">
+                <Text className="text-2xl font-bold text-white leading-tight">
+                  {isGuest ? 'Blessed Guest' : (user?.displayName || 'Seeker')}
+                </Text>
+                <Text className="text-sm font-medium text-white/70">
+                  {isGuest ? 'Join the community' : user?.email}
+                </Text>
+              </View>
+              {isGuest && (
+                <View className="bg-amber-400 px-3 py-1 rounded-full">
+                  <Text className="text-[10px] font-black text-amber-900 uppercase">Guest</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Quick Stats Row */}
+            <View className="flex-row justify-between bg-black/10 rounded-2xl p-4 border border-white/5">
+              <View className="items-center flex-1">
+                <Text className="text-white text-lg font-black">7</Text>
+                <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Streak</Text>
+              </View>
+              <View className="w-[1px] h-full bg-white/10" />
+              <View className="items-center flex-1">
+                <Text className="text-white text-lg font-black">12</Text>
+                <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Active</Text>
+              </View>
+              <View className="w-[1px] h-full bg-white/10" />
+              <View className="items-center flex-1">
+                <Text className="text-white text-lg font-black">842</Text>
+                <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Points</Text>
+              </View>
+            </View>
           </View>
-          <Text className={`text-xl font-bold ${textColor}`}>
-            {isGuest ? 'Guest User' : (user?.displayName || 'User')}
-          </Text>
-          <Text className={`text-sm ${textSecondary} mt-1`}>
-            {isGuest ? 'Not signed in' : user?.email || "guest@gmail.com"}
-          </Text>
-          {isGuest && (
-            <View className="bg-yellow-100 px-3 py-1 rounded-lg mt-3">
-              <Text className="text-yellow-700 text-xs font-semibold">Guest Mode</Text>
-            </View>
-          )}
         </View>
 
-        {/* Account Section */}
-        <View className="mb-5">
-          <Text className={`text-sm font-semibold ${textSecondary} uppercase mb-2 ml-1`}>Account</Text>
-
-          {!isGuest && (
-            <TouchableOpacity 
-              className={`${surfaceColor} flex-row items-center p-4 rounded-xl mb-2`} 
-              onPress={handleSwitchAccount}
-            >
-              <Text className="text-xl mr-3">🔄</Text>
-              <Text className={`flex-1 text-base ${textColor}`}>Switch Account</Text>
-              <Text className={`text-xl ${textSecondary}`}>›</Text>
-            </TouchableOpacity>
-          )}
-
-          {isGuest && (
-            <TouchableOpacity 
-              className={`${surfaceColor} flex-row items-center p-4 rounded-xl mb-2`} 
-              onPress={handleLogout}
-            >
-              <Text className="text-xl mr-3">🔑</Text>
-              <Text className={`flex-1 text-base ${textColor}`}>Sign In</Text>
-              <Text className={`text-xl ${textSecondary}`}>›</Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity 
-            className={`${surfaceColor} flex-row items-center p-4 rounded-xl`} 
-            onPress={handleContinueAsGuest}
+        {/* Settings Sections */}
+        <View className="mb-6">
+          <Text className="text-xs font-black uppercase mb-3 ml-2 tracking-widest" style={{ color: colors.textSecondary }}>Account</Text>
+          <View 
+            className="rounded-[28px] px-5 shadow-sm" 
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 10,
+              elevation: 3,
+            }}
           >
-            <Text className="text-xl mr-3">👤</Text>
-            <Text className={`flex-1 text-base ${textColor}`}>
-              {isGuest ? 'Stay as Guest' : 'Continue as Guest'}
-            </Text>
-            <Text className={`text-xl ${textSecondary}`}>›</Text>
-          </TouchableOpacity>
+            {isGuest ? (
+              <SettingItem 
+                icon="log-in" 
+                label="Sign In" 
+                onPress={handleLogout}
+              />
+            ) : (
+              <SettingItem 
+                icon="swap-horizontal" 
+                label="Switch Account" 
+                onPress={handleSwitchAccount}
+              />
+            )}
+            <SettingItem 
+              icon="person-circle" 
+              label={isGuest ? "Stay as Guest" : "Continue as Guest"} 
+              onPress={handleContinueAsGuest}
+              isLast={true}
+            />
+          </View>
         </View>
 
-        {/* Settings Section */}
-        <View className="mb-5">
-          <Text className={`text-sm font-semibold ${textSecondary} uppercase mb-2 ml-1`}>Settings</Text>
-
-          <TouchableOpacity 
-            className={`${surfaceColor} flex-row items-center p-4 rounded-xl mb-2`} 
-            onPress={handleToggleDarkMode}
+        <View className="mb-6">
+          <Text className="text-xs font-black uppercase mb-3 ml-2 tracking-widest" style={{ color: colors.textSecondary }}>Preferences</Text>
+          <View 
+            className="rounded-[28px] px-5 shadow-sm" 
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 10,
+              elevation: 3,
+            }}
           >
-            <Text className="text-xl mr-3">{isDarkMode ? '☀️' : '🌙'}</Text>
-            <Text className={`flex-1 text-base ${textColor}`}>Dark Mode</Text>
-            <View className={`w-12 h-7 rounded-full ${isDarkMode ? 'bg-indigo-500' : 'bg-gray-300'} justify-center px-1`}>
-              <View className={`w-5 h-5 rounded-full bg-white ${isDarkMode ? 'ml-6' : 'ml-0'}`} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity className={`${surfaceColor} flex-row items-center p-4 rounded-xl`}>
-            <Text className="text-xl mr-3">🔔</Text>
-            <Text className={`flex-1 text-base ${textColor}`}>Notifications</Text>
-            <Text className={`text-xl ${textSecondary}`}>›</Text>
-          </TouchableOpacity>
+            <SettingItem 
+              icon={isDarkMode ? "sunny" : "moon"} 
+              label="Appearance" 
+              onPress={handleToggleDarkMode}
+              rightElement={
+                <View 
+                  className="w-11 h-6 rounded-full justify-center px-0.5" 
+                  style={{ backgroundColor: isDarkMode ? colors.primary : (isDarkMode ? '#374151' : '#E5E7EB') }}
+                >
+                  <View 
+                    className="w-5 h-5 rounded-full bg-white shadow-sm" 
+                    style={{ marginLeft: isDarkMode ? 20 : 0 }} 
+                  />
+                </View>
+              }
+            />
+            <SettingItem 
+              icon="notifications" 
+              label="Notifications" 
+              onPress={() => Alert.alert('Coming Soon', 'Notification settings are arriving soon!')}
+              isLast={true}
+            />
+          </View>
         </View>
 
-        {/* About Section */}
-        <View className="mb-5">
-          <Text className={`text-sm font-semibold ${textSecondary} uppercase mb-2 ml-1`}>About</Text>
+        <View className="mb-8">
+          <Text className="text-xs font-black uppercase mb-3 ml-2 tracking-widest" style={{ color: colors.textSecondary }}>Support</Text>
+          <View 
+            className="rounded-[28px] px-5 shadow-sm" 
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 10,
+              elevation: 3,
+            }}
+          >
+            <SettingItem icon="information-circle" label="About App" onPress={() => {}} />
+            <SettingItem icon="help-circle" label="Help Center" onPress={() => {}} isLast={true} />
+          </View>
+        </View>
 
-          <TouchableOpacity className={`${surfaceColor} flex-row items-center p-4 rounded-xl mb-2`}>
-            <Text className="text-xl mr-3">ℹ️</Text>
-            <Text className={`flex-1 text-base ${textColor}`}>App Info</Text>
-            <Text className={`text-xl ${textSecondary}`}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className={`${surfaceColor} flex-row items-center p-4 rounded-xl`}>
-            <Text className="text-xl mr-3">❓</Text>
-            <Text className={`flex-1 text-base ${textColor}`}>Help & Support</Text>
-            <Text className={`text-xl ${textSecondary}`}>›</Text>
-          </TouchableOpacity>
+        {/* Spiritual Motivation Card */}
+        <View className="mb-8 rounded-[28px] p-6 border-l-4" style={{ backgroundColor: colors.surface, borderLeftColor: colors.primary }}>
+          <Ionicons name="chatbubble-ellipses" size={24} color={colors.primary} className="mb-3 opacity-30" />
+          <Text className="text-lg italic font-medium leading-7 mb-3" style={{ color: colors.text }}>"{quranVerse.text}"</Text>
+          <Text className="text-xs font-black uppercase tracking-widest text-right" style={{ color: colors.primary }}>— {quranVerse.surah}</Text>
         </View>
 
         {/* Sign Out Button */}
-        {user && !isGuest && (
-          <TouchableOpacity className="bg-red-100 p-4 rounded-xl items-center mt-2" onPress={handleLogout}>
-            <Text className="text-red-600 font-semibold">Sign Out</Text>
+        {!isGuest && (
+          <TouchableOpacity 
+            className="p-5 rounded-2xl items-center border border-red-100 mb-8"
+            style={{ backgroundColor: isDarkMode ? '#2D1616' : '#FFF5F5', borderColor: isDarkMode ? '#451D1D' : '#FEE2E2' }}
+            onPress={handleLogout}
+          >
+            <Text className="font-bold text-red-500">Sign Out from Device</Text>
           </TouchableOpacity>
         )}
 
-        {/* App Version */}
-        <Text className={`text-center text-sm font-semibold mt-8 ${textSecondary}`}>v1.0.0</Text>
-        <Text className={`text-center text-xs mt-1 ${textSecondary}`}>Created by Hamzah</Text>
-        <Text className={`text-center text-xs mt-1 ${textSecondary}`}>© 2026 - Personal Habit Tracking System</Text>
+        {/* Footer */}
+        <View className="items-center pb-10">
+          <Text className="text-[10px] font-black opacity-30 tracking-[4px] mb-1" style={{ color: colors.text }}>V1.0.0</Text>
+          <Text className="text-[10px] font-bold opacity-20" style={{ color: colors.text }}>MADE WITH ❤️ FOR THE UMMAH</Text>
+        </View>
       </ScrollView>
     </View>
   );

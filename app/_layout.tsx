@@ -9,6 +9,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { Provider, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from '@/redux/store';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -64,7 +65,9 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <PersistGate loading={<LoadingScreen />} persistor={persistor}>
-        <AppContent />
+        <SafeAreaProvider>
+          <AppContent />
+        </SafeAreaProvider>
       </PersistGate>
     </Provider>
   );
