@@ -1,62 +1,41 @@
 import { View, Text, ScrollView, Platform } from 'react-native';
 import { useSelector } from 'react-redux';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { getPastNDays } from '../../utils/dateUtils';
 import { useAppTheme } from '../../hooks/useAppTheme';
+import { useUserStats } from '../../hooks/useUserStats';
+import { CATEGORY_ICONS, HabitCategory } from '../../types';
 
 export default function Analytics() {
-  const { habits, completions } = useSelector((state: any) => state.habits);
-  const { isGuest } = useSelector((state: any) => state.auth);
   const { isDarkMode, colors } = useAppTheme();
-
-  // Calculate stats
-  const completedCount = completions.filter((c: any) => c.completed).length;
-  const totalPossible = habits.filter((h: any) => h.isActive).length * 7;
-  const completionRate = totalPossible > 0 ? (completedCount / totalPossible) * 100 : 0;
-  
-  // Calculate current streak
-  const calculateStreak = () => {
-    const dates = getPastNDays(30);
-    let streak = 0;
-    
-    for (const date of dates) {
-      const dayCompletions = completions.filter((c: any) => c.date === date && c.completed);
-      const activeHabits = habits.filter((h: any) => h.isActive);
-      
-      if (dayCompletions.length >= activeHabits.length && activeHabits.length > 0) {
-        streak++;
-      } else if (streak > 0) {
-        break;
-      }
-    }
-    
-    return streak;
-  };
-
-  // Calculate weekly progress
-  const weekDates = getPastNDays(7);
-  const thisWeekCompletions = completions.filter((c: any) => 
-    weekDates.includes(c.date) && c.completed
-  ).length;
+  const { isGuest } = useSelector((state: any) => state.auth);
+  const { 
+    activeHabitsCount, 
+    totalCompletions, 
+    currentStreak, 
+    thisWeekCompletionsCount, 
+    completionRate,
+    habits,
+    completions
+  } = useUserStats();
 
   const stats = {
-    totalCompletions: completedCount,
-    currentStreak: calculateStreak(),
-    weeklyProgress: thisWeekCompletions,
-    completionRate: Math.round(completionRate),
+    totalCompletions: totalCompletions,
+    currentStreak: currentStreak,
+    weeklyProgress: thisWeekCompletionsCount,
+    completionRate: completionRate,
   };
 
   const getHabitStats = () => {
     return habits.map((habit: any) => {
       const habitCompletions = completions.filter((c: any) => c.habitId === habit.id);
-      const completedCount = habitCompletions.filter((c: any) => c.completed).length;
-      const rate = Math.round((completedCount / 30) * 100);
+      const completedHabitCount = habitCompletions.filter((c: any) => c.completed).length;
+      const rate = Math.round((completedHabitCount / 30) * 100);
       
       return {
         name: habit.name,
         category: habit.category,
-        completed: completedCount,
+        completed: totalCompletions,
         rate,
       };
     });
@@ -89,78 +68,171 @@ export default function Analytics() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Stats Grid */}
-        <View className="flex-row flex-wrap justify-between mb-4">
+        {/* Stats Grid - Premium Cards */}
+        <View className="flex-row flex-wrap justify-between mb-6">
           <View 
-            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
-            style={{ backgroundColor: colors.surface }}
+            className="w-[48%] rounded-[32px] p-6 mb-4 shadow-sm elevation-3"
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 15,
+            }}
           >
-            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.currentStreak}</Text>
-            <View className="flex-row items-center mt-1">
-              <Ionicons name="flame" size={16} color={colors.textSecondary} />
-              <Text className="text-sm mt-0.5 ml-1" style={{ color: colors.textSecondary }}>Day Streak</Text>
+            <View className="w-10 h-10 rounded-full items-center justify-center mb-3" style={{ backgroundColor: colors.primary + '15' }}>
+              <Ionicons name="flame" size={20} color={colors.primary} />
             </View>
+            <Text className="text-3xl font-black" style={{ color: colors.text }}>{stats.currentStreak}</Text>
+            <Text className="text-[10px] font-black uppercase tracking-widest mt-1" style={{ color: colors.textSecondary }}>Day Streak</Text>
           </View>
+
           <View 
-            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
-            style={{ backgroundColor: colors.surface }}
+            className="w-[48%] rounded-[32px] p-6 mb-4 shadow-sm elevation-3"
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 15,
+            }}
           >
-            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.weeklyProgress}</Text>
-            <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>This Week</Text>
+            <View className="w-10 h-10 rounded-full items-center justify-center mb-3" style={{ backgroundColor: '#10B98115' }}>
+              <Ionicons name="calendar" size={20} color="#10B981" />
+            </View>
+            <Text className="text-3xl font-black" style={{ color: colors.text }}>{stats.weeklyProgress}</Text>
+            <Text className="text-[10px] font-black uppercase tracking-widest mt-1" style={{ color: colors.textSecondary }}>This Week</Text>
           </View>
+
           <View 
-            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
-            style={{ backgroundColor: colors.surface }}
+            className="w-[48%] rounded-[32px] p-6 mb-4 shadow-sm elevation-3"
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 15,
+            }}
           >
-            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.totalCompletions}</Text>
-            <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>Total</Text>
+            <View className="w-10 h-10 rounded-full items-center justify-center mb-3" style={{ backgroundColor: '#F59E0B15' }}>
+              <Ionicons name="checkmark-circle" size={20} color="#F59E0B" />
+            </View>
+            <Text className="text-3xl font-black" style={{ color: colors.text }}>{stats.totalCompletions}</Text>
+            <Text className="text-[10px] font-black uppercase tracking-widest mt-1" style={{ color: colors.textSecondary }}>Total Done</Text>
           </View>
+
           <View 
-            className="w-[48%] rounded-2xl p-5 mb-3 items-center shadow-sm elevation-2"
-            style={{ backgroundColor: colors.surface }}
+            className="w-[48%] rounded-[32px] p-6 mb-4 shadow-sm elevation-3"
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 15,
+            }}
           >
-            <Text className="text-3xl font-bold" style={{ color: colors.primary }}>{stats.completionRate}%</Text>
-            <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>Rate</Text>
+            <View className="w-10 h-10 rounded-full items-center justify-center mb-3" style={{ backgroundColor: '#8B5CF615' }}>
+              <Ionicons name="trending-up" size={20} color="#8B5CF6" />
+            </View>
+            <Text className="text-3xl font-black" style={{ color: colors.text }}>{stats.completionRate}%</Text>
+            <Text className="text-[10px] font-black uppercase tracking-widest mt-1" style={{ color: colors.textSecondary }}>Success Rate</Text>
           </View>
         </View>
 
-        {/* Completion Rate */}
+        {/* Overall Completion Rate - Visual Progress */}
         <View 
-          className="rounded-2xl p-5 mb-4 shadow-sm elevation-2"
-          style={{ backgroundColor: colors.surface }}
+          className="rounded-[32px] p-6 mb-6 shadow-sm elevation-3"
+          style={{ 
+            backgroundColor: colors.surface,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.05,
+            shadowRadius: 15,
+          }}
         >
-          <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>Overall Completion Rate</Text>
-          <View className="h-3 rounded-full overflow-hidden mb-2" style={{ backgroundColor: colors.border }}>
+          <Text className="text-xs font-black uppercase tracking-widest mb-4 ml-1" style={{ color: colors.textSecondary }}>Overall Progress</Text>
+          
+          <View className="flex-row items-end justify-between mb-4">
+            <Text className="text-4xl font-black" style={{ color: colors.text }}>{stats.completionRate}<Text className="text-xl">%</Text></Text>
+            <Text className="text-xs font-bold mb-1" style={{ color: colors.textSecondary }}>Weekly Goal</Text>
+          </View>
+
+          <View className="h-4 rounded-full overflow-hidden" style={{ backgroundColor: isDarkMode ? '#1F2937' : '#F1F5F9' }}>
             <View 
               className="h-full rounded-full" 
-              style={{ width: `${stats.completionRate}%`, backgroundColor: isDarkMode ? '#818cf8' : '#667eea' }} 
+              style={{ 
+                width: `${stats.completionRate}%`, 
+                backgroundColor: colors.primary,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.5,
+                shadowRadius: 10,
+              }} 
             />
           </View>
-          <Text className="text-sm text-right" style={{ color: colors.textSecondary }}>{stats.completionRate}% completed</Text>
         </View>
 
-        {/* Per-Habit Stats */}
-        <View 
-          className="rounded-2xl p-5 mb-4 shadow-sm elevation-2"
-          style={{ backgroundColor: colors.surface }}
-        >
-          <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>Habit Performance (30 days)</Text>
-          {getHabitStats().map((habit: any, index: number) => (
-            <View key={index} className="flex-row items-center mb-3">
-              <View className="w-[100px]">
-                <Text className="text-sm font-semibold" style={{ color: colors.text }}>{habit.name}</Text>
-                <Text className="text-xs" style={{ color: colors.textSecondary }}>{habit.completed}/30 days</Text>
-              </View>
-              <View className="flex-1 h-2 rounded-full mx-3 overflow-hidden" style={{ backgroundColor: colors.border }}>
+        {/* Per-Habit Stats - Separated Cards */}
+        <Text className="text-xs font-black uppercase tracking-widest mb-4 ml-5" style={{ color: colors.textSecondary }}>Habit Performance (30 Days)</Text>
+        
+        {getHabitStats().map((stats: any, index: number) => (
+          <View 
+            key={index} 
+            className="rounded-[28px] p-5 mb-4 shadow-sm elevation-3"
+            style={{ 
+              backgroundColor: colors.surface,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 15,
+            }}
+          >
+            <View className="flex-row justify-between items-center mb-4">
+              <View className="flex-row items-center flex-1 mr-3">
                 <View 
-                  className="h-full rounded-full" 
-                  style={{ width: `${habit.rate}%`, backgroundColor: isDarkMode ? '#34D399' : '#10B981' }} 
-                />
+                  className="w-10 h-10 rounded-full items-center justify-center mr-3" 
+                  style={{ backgroundColor: colors.primary + '10' }}
+                >
+                  <Text className="text-lg">
+                    {CATEGORY_ICONS[stats.category as HabitCategory] || '✨'}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-black tracking-tight" style={{ color: colors.text }} numberOfLines={1}>
+                    {stats.name}
+                  </Text>
+                  <Text className="text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.textSecondary }}>
+                    {stats.category}
+                  </Text>
+                </View>
               </View>
-              <Text className="w-10 text-sm font-semibold text-right" style={{ color: colors.success }}>{habit.rate}%</Text>
+              <View className="items-end">
+                <Text className="text-xl font-black" style={{ color: stats.rate > 70 ? colors.success : (stats.rate > 40 ? '#F59E0B' : '#EF4444') }}>
+                  {stats.rate}%
+                </Text>
+              </View>
             </View>
-          ))}
-        </View>
+
+            <View className="h-3 rounded-full overflow-hidden mb-3" style={{ backgroundColor: isDarkMode ? '#1F2937' : '#F1F5F9' }}>
+              <View 
+                className="h-full rounded-full" 
+                style={{ 
+                  width: `${stats.rate}%`, 
+                  backgroundColor: stats.rate > 70 ? colors.success : (stats.rate > 40 ? '#F59E0B' : '#EF4444') 
+                }} 
+              />
+            </View>
+
+            <View className="flex-row justify-between items-center">
+              <Text className="text-[10px] font-black uppercase tracking-wider" style={{ color: colors.textSecondary }}>
+                Last 30 Days
+              </Text>
+              <Text className="text-[10px] font-black uppercase tracking-wider" style={{ color: colors.textSecondary }}>
+                {stats.completed} / 30 Days
+              </Text>
+            </View>
+          </View>
+        ))}
       </ScrollView>
     </View>
   );

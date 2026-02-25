@@ -1,18 +1,30 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { PURGE } from 'redux-persist';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { logout, setGuest } from '../../redux/slice/authSlice';
 import { toggleTheme } from '../../redux/slice/themeSlice';
+import { setHijriAdjustment, setCalculationMethod } from '../../redux/slice/settingsSlice';
 import { logOut } from '../../services/authService';
+import { useUserStats } from '../../hooks/useUserStats';
+
+const CALCULATION_METHODS = [
+  { id: 1, name: 'Subcontinent (Karachi)' },
+  { id: 2, name: 'ISNA (North America)' },
+  { id: 3, name: 'Muslim World League' },
+  { id: 4, name: 'Umm al-Qura (Makkah)' },
+  { id: 5, name: 'Egyptian General Authority' },
+];
 
 export default function Profile() {
   const dispatch = useDispatch();
   const { user, isGuest } = useSelector((state: any) => state.auth);
   const { isDarkMode, colors } = useAppTheme();
+  const { hijriAdjustment, calculationMethod } = useSelector((state: any) => state.settings);
+  const { activeHabitsCount, totalPoints, currentStreak } = useUserStats();
 
   const handleLogout = () => {
     console.log('handleLogout called, isGuest:', isGuest);
@@ -162,7 +174,7 @@ export default function Profile() {
               </View>
               <View className="ml-4 flex-1">
                 <Text className="text-2xl font-bold text-white leading-tight">
-                  {isGuest ? 'Blessed Guest' : (user?.displayName || 'Seeker')}
+                  {isGuest ? 'Blessed Abdullah' : (user?.displayName || 'Seeker')}
                 </Text>
                 <Text className="text-sm font-medium text-white/70">
                   {isGuest ? 'Join the community' : user?.email}
@@ -178,21 +190,28 @@ export default function Profile() {
             {/* Quick Stats Row */}
             <View className="flex-row justify-between bg-black/10 rounded-2xl p-4 border border-white/5">
               <View className="items-center flex-1">
-                <Text className="text-white text-lg font-black">7</Text>
+                <Text className="text-white text-lg font-black">{currentStreak}</Text>
                 <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Streak</Text>
               </View>
               <View className="w-[1px] h-full bg-white/10" />
               <View className="items-center flex-1">
-                <Text className="text-white text-lg font-black">12</Text>
-                <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Active</Text>
+                <Text className="text-white text-lg font-black">{activeHabitsCount}</Text>
+                <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Goals</Text>
               </View>
               <View className="w-[1px] h-full bg-white/10" />
               <View className="items-center flex-1">
-                <Text className="text-white text-lg font-black">842</Text>
-                <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Points</Text>
+                <Text className="text-white text-lg font-black">{totalPoints}</Text>
+                <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Milestones</Text>
               </View>
             </View>
           </View>
+        </View>
+
+        {/* Spiritual Motivation Card - Moved up */}
+        <View className="mb-8 rounded-[28px] p-6 border-l-4" style={{ backgroundColor: colors.surface, borderLeftColor: colors.primary }}>
+          <Ionicons name="chatbubble-ellipses" size={24} color={colors.primary} className="mb-3 opacity-30" />
+          <Text className="text-lg italic font-medium leading-7 mb-3" style={{ color: colors.text }}>"{quranVerse.text}"</Text>
+          <Text className="text-xs font-black uppercase tracking-widest text-right" style={{ color: colors.primary }}>— {quranVerse.surah}</Text>
         </View>
 
         {/* Settings Sections */}
@@ -264,7 +283,44 @@ export default function Profile() {
               icon="notifications" 
               label="Notifications" 
               onPress={() => Alert.alert('Coming Soon', 'Notification settings are arriving soon!')}
+            />
+            <SettingItem 
+              icon="calendar" 
+              label="Hijri Adjustment" 
+              onPress={() => {
+                Alert.alert(
+                  'Adjust Hijri Date',
+                  'Select an adjustment if the moon sighting differs in your region.',
+                  [
+                    { text: '-1 Day', onPress: () => dispatch(setHijriAdjustment(-1)) },
+                    { text: '0 (Default)', onPress: () => dispatch(setHijriAdjustment(0)) },
+                    { text: '+1 Day', onPress: () => dispatch(setHijriAdjustment(1)) },
+                    { text: 'Cancel', style: 'cancel' }
+                  ]
+                );
+              }}
+              rightElement={
+                <Text className="font-bold" style={{ color: colors.primary }}>
+                  {hijriAdjustment > 0 ? `+${hijriAdjustment}` : hijriAdjustment} Day
+                </Text>
+              }
+            />
+            <SettingItem 
+              icon="options" 
+              label="Calculation Method" 
+              onPress={() => {
+                const options = CALCULATION_METHODS.map(m => ({
+                  text: m.name,
+                  onPress: () => dispatch(setCalculationMethod(m.id))
+                }));
+                Alert.alert('Calculation Method', 'Select the method used in your region.', [...options, { text: 'Cancel', style: 'cancel' }]);
+              }}
               isLast={true}
+              rightElement={
+                <Text className="font-bold text-xs" style={{ color: colors.primary }}>
+                  {CALCULATION_METHODS.find(m => m.id === calculationMethod)?.name.split(' ')[0]}
+                </Text>
+              }
             />
           </View>
         </View>
@@ -285,13 +341,6 @@ export default function Profile() {
             <SettingItem icon="information-circle" label="About App" onPress={() => {}} />
             <SettingItem icon="help-circle" label="Help Center" onPress={() => {}} isLast={true} />
           </View>
-        </View>
-
-        {/* Spiritual Motivation Card */}
-        <View className="mb-8 rounded-[28px] p-6 border-l-4" style={{ backgroundColor: colors.surface, borderLeftColor: colors.primary }}>
-          <Ionicons name="chatbubble-ellipses" size={24} color={colors.primary} className="mb-3 opacity-30" />
-          <Text className="text-lg italic font-medium leading-7 mb-3" style={{ color: colors.text }}>"{quranVerse.text}"</Text>
-          <Text className="text-xs font-black uppercase tracking-widest text-right" style={{ color: colors.primary }}>— {quranVerse.surah}</Text>
         </View>
 
         {/* Sign Out Button */}

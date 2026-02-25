@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Alert, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { addHabit, deleteHabit, toggleHabitActive } from '../../redux/slice/habitsSlice';
 import { Habit, HabitCategory } from '../../types';
@@ -103,8 +103,8 @@ export default function Habits() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
       {/* Premium Header - Full Bleed */}
-      <View 
-        className="pb-5 px-6 overflow-hidden" 
+      <View
+        className="pb-5 px-6 overflow-hidden"
         style={{ backgroundColor: colors.primary, paddingTop: insets.top + 10 }}
       >
         {/* Background Decorations */}
@@ -117,29 +117,30 @@ export default function Habits() {
         </Text>
       </View>
 
-      <ScrollView 
-        className="flex-1" 
-        contentContainerStyle={{ 
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
           padding: 16,
-          paddingBottom: insets.bottom + 40 
+          paddingBottom: insets.bottom + 40
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Add Button */}
+        {/* Add Button - Premium Action */}
         <TouchableOpacity
-          className="py-4 rounded-2xl items-center mb-6"
+          className="py-5 rounded-[24px] items-center mb-8 flex-row justify-center"
           onPress={() => setShowModal(true)}
           activeOpacity={0.8}
-          style={{ 
+          style={{
             backgroundColor: colors.primary,
             shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 4 },
+            shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 5,
+            shadowRadius: 15,
+            elevation: 8,
           }}
         >
-          <Text className="text-white text-base font-black uppercase tracking-wider">+ Add New Habit</Text>
+          <Ionicons name="add-circle" size={24} color="white" className="mr-2" />
+          <Text className="text-white text-base font-black uppercase tracking-[2px]">New Habit</Text>
         </TouchableOpacity>
 
         {/* Habits List */}
@@ -154,51 +155,62 @@ export default function Habits() {
             {/* Default Habits Section */}
             {defaultHabits.length > 0 && (
               <>
-                <Text className="text-xs font-semibold mb-3 uppercase" style={{ color: colors.textSecondary }}>DEFAULT HABITS</Text>
+                <Text className="text-xs font-semibold mb-3 uppercase ml-5" style={{ color: colors.textSecondary }}>Prayers</Text>
                 {defaultHabits.map((habit: any) => (
                   <View
-                    key={habit.id} 
-                    className="rounded-2xl p-4 mb-4"
-                    style={{ 
+                    key={habit.id}
+                    className="rounded-[28px] p-5 mb-4"
+                    style={{
                       backgroundColor: colors.surface,
                       shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
+                      shadowOffset: { width: 0, height: 4 },
                       shadowOpacity: 0.05,
-                      shadowRadius: 10,
-                      elevation: 3,
+                      shadowRadius: 15,
+                      elevation: 4,
                     }}
                   >
-                    <View className="flex-row justify-between items-center mb-3">
-                      <View
-                        className="px-3 py-1 rounded-lg"
-                        style={{ backgroundColor: CATEGORY_COLORS[habit.category as HabitCategory] + '20' }}
-                      >
-                        <Text className="text-[10px] font-black uppercase tracking-wider" style={{ color: CATEGORY_COLORS[habit.category as HabitCategory] }}>
-                          {CATEGORIES.find(c => c.value === habit.category)?.emoji}{' '}
-                          {habit.category.charAt(0).toUpperCase() + habit.category.slice(1)}
+                    <View className="flex-row justify-between items-start mb-4">
+                      <View className="flex-1 mr-3">
+                        <View
+                          className="px-3 py-1 rounded-full self-start mb-2"
+                          style={{ backgroundColor: CATEGORY_COLORS[habit.category as HabitCategory] + '15' }}
+                        >
+                          <Text className="text-[10px] font-black uppercase tracking-wider" style={{ color: CATEGORY_COLORS[habit.category as HabitCategory] }}>
+                            {CATEGORIES.find(c => c.value === habit.category)?.emoji}{' '}
+                            {habit.category.charAt(0).toUpperCase() + habit.category.slice(1)}
+                          </Text>
+                        </View>
+                        <Text
+                          className="text-xl font-black leading-7"
+                          style={{ color: habit.isActive ? colors.text : colors.textSecondary }}
+                        >
+                          {habit.name}
                         </Text>
                       </View>
+
                       <TouchableOpacity
-                        className="px-3 py-1 rounded-md"
-                        style={{ backgroundColor: habit.isActive ? colors.primary : (isDarkMode ? '#4B5563' : '#9CA3AF') }}
+                        className="px-4 py-2 rounded-2xl"
+                        style={{
+                          backgroundColor: habit.isActive ? colors.primary : (isDarkMode ? '#374151' : '#F3F4F6'),
+                          shadowColor: habit.isActive ? colors.primary : 'transparent',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 4,
+                        }}
                         onPress={() => handleToggleActive(habit.id)}
                       >
-                        <Text className="text-white text-xs font-semibold">
-                          {habit.isActive ? 'Active' : 'Inactive'}
+                        <Text className="font-bold text-xs" style={{ color: habit.isActive ? 'white' : colors.textSecondary }}>
+                          {habit.isActive ? 'ACTIVE' : 'INACTIVE'}
                         </Text>
                       </TouchableOpacity>
                     </View>
 
-                    <Text
-                      className="text-lg font-semibold mb-2"
-                      style={{ color: habit.isActive ? colors.text : colors.textSecondary }}
-                    >
-                      {habit.name}
-                    </Text>
+                    <View className="h-[1px] w-full mb-3 opacity-5" style={{ backgroundColor: colors.text }} />
 
-                    <View className="flex-row justify-between items-center">
-                      <Text className="text-sm" style={{ color: colors.textSecondary }}>
-                        {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)}
+                    <View className="flex-row items-center">
+                      <Ionicons name="repeat" size={14} color={colors.textSecondary} className="mr-1" />
+                      <Text className="text-xs font-bold uppercase tracking-widest" style={{ color: colors.textSecondary }}>
+                        {habit.frequency}
                       </Text>
                     </View>
                   </View>
@@ -209,57 +221,70 @@ export default function Habits() {
             {/* Custom Habits Section */}
             {customHabits.length > 0 && (
               <>
-                <Text className="text-xs font-semibold mt-4 mb-3 uppercase" style={{ color: colors.textSecondary }}>MY HABITS</Text>
+                <Text className="text-xs font-semibold mt-4 mb-3 ml-5 uppercase" style={{ color: colors.textSecondary }}>MY HABITS</Text>
                 {customHabits.map((habit: any) => (
                   <View
                     key={habit.id}
-                    className="rounded-2xl p-4 mb-4"
-                    style={{ 
+                    className="rounded-[28px] p-5 mb-4"
+                    style={{
                       backgroundColor: colors.surface,
                       shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
+                      shadowOffset: { width: 0, height: 4 },
                       shadowOpacity: 0.05,
-                      shadowRadius: 10,
-                      elevation: 3,
+                      shadowRadius: 15,
+                      elevation: 4,
                     }}
                   >
-                    <View className="flex-row justify-between items-center mb-3">
-                      <View
-                        className="px-3 py-1 rounded-lg"
-                        style={{ backgroundColor: CATEGORY_COLORS[habit.category as HabitCategory] + '20' }}
-                      >
-                        <Text className="text-[10px] font-black uppercase tracking-wider" style={{ color: CATEGORY_COLORS[habit.category as HabitCategory] }}>
-                          {CATEGORIES.find(c => c.value === habit.category)?.emoji}{' '}
-                          {habit.category.charAt(0).toUpperCase() + habit.category.slice(1)}
+                    <View className="flex-row justify-between items-start mb-4">
+                      <View className="flex-1 mr-3">
+                        <View
+                          className="px-3 py-1 rounded-full self-start mb-2"
+                          style={{ backgroundColor: CATEGORY_COLORS[habit.category as HabitCategory] + '15' }}
+                        >
+                          <Text className="text-[10px] font-black uppercase tracking-wider" style={{ color: CATEGORY_COLORS[habit.category as HabitCategory] }}>
+                            {CATEGORIES.find(c => c.value === habit.category)?.emoji}{' '}
+                            {habit.category.charAt(0).toUpperCase() + habit.category.slice(1)}
+                          </Text>
+                        </View>
+                        <Text
+                          className="text-xl font-black leading-7"
+                          style={{ color: habit.isActive ? colors.text : colors.textSecondary }}
+                        >
+                          {habit.name}
                         </Text>
                       </View>
+
                       <TouchableOpacity
-                        className="px-3 py-1 rounded-md"
-                        style={{ backgroundColor: habit.isActive ? colors.primary : (isDarkMode ? '#4B5563' : '#9CA3AF') }}
+                        className="px-4 py-2 rounded-2xl"
+                        style={{
+                          backgroundColor: habit.isActive ? colors.primary : (isDarkMode ? '#374151' : '#F3F4F6'),
+                          shadowColor: habit.isActive ? colors.primary : 'transparent',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 4,
+                        }}
                         onPress={() => handleToggleActive(habit.id)}
                       >
-                        <Text className="text-white text-xs font-semibold">
-                          {habit.isActive ? 'Active' : 'Inactive'}
+                        <Text className="font-bold text-xs" style={{ color: habit.isActive ? 'white' : colors.textSecondary }}>
+                          {habit.isActive ? 'ACTIVE' : 'INACTIVE'}
                         </Text>
                       </TouchableOpacity>
                     </View>
 
-                    <Text
-                      className="text-lg font-semibold mb-2"
-                      style={{ color: habit.isActive ? colors.text : colors.textSecondary }}
-                    >
-                      {habit.name}
-                    </Text>
+                    <View className="h-[1px] w-full mb-4 opacity-5" style={{ backgroundColor: colors.text }} />
 
                     <View className="flex-row justify-between items-center">
-                      <Text className="text-sm" style={{ color: colors.textSecondary }}>
-                        {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)}
-                      </Text>
+                      <View className="flex-row items-center">
+                        <Ionicons name="repeat" size={14} color={colors.textSecondary} className="mr-1" />
+                        <Text className="text-xs font-bold uppercase tracking-widest" style={{ color: colors.textSecondary }}>
+                          {habit.frequency}
+                        </Text>
+                      </View>
                       <TouchableOpacity
-                        className="px-3 py-1.5"
+                        className="bg-red-50 dark:bg-red-950/20 px-4 py-2 rounded-xl"
                         onPress={() => handleDeleteHabit(habit.id)}
                       >
-                        <Text className="text-sm font-semibold" style={{ color: colors.error }}>Delete</Text>
+                        <Text className="text-xs font-black uppercase tracking-wider" style={{ color: colors.error }}>Delete</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -296,69 +321,91 @@ export default function Habits() {
               onPress={(e) => e.stopPropagation()}
             >
               <View
-                className="rounded-t-3xl p-6"
+                className="rounded-t-[40px] p-8 pb-10"
                 style={{ backgroundColor: colors.surface }}
               >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full self-center opacity-50" style={{ marginBottom: 6 }} />
+                {/* Drag Handle */}
+                <View className="w-16 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full self-center mb-8 opacity-50" />
 
-                <Text className="text-2xl font-bold text-center" style={{ color: colors.text, marginBottom: 10 }}>Add New Habit</Text>
+                <Text className="text-3xl font-black text-center mb-2" style={{ color: colors.text }}>New Habit</Text>
+                <Text className="text-sm text-center mb-8 font-medium" style={{ color: colors.textSecondary }}>Set a new goal for yourself</Text>
 
-                <TextInput
-                  className="border-2 rounded-xl p-4 text-base mb-6"
-                  style={{
-                    borderColor: colors.border,
-                    backgroundColor: isDarkMode ? '#111827' : '#F3F4F6',
-                    color: colors.text,
-                    marginBottom: 10,
-                  }}
-                  placeholder="Habit name"
-                  value={newHabitName}
-                  onChangeText={setNewHabitName}
-                  placeholderTextColor={colors.textSecondary}
-                  autoFocus={true}
-                />
-
-                <Text className="text-base font-semibold mb-2" style={{ color: colors.text, }}>Category</Text>
-                <View className="flex-row flex-wrap mb-6">
-                  {CATEGORIES.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.value}
-                      className="border-2 rounded-lg px-3 py-2 mr-2 mb-2"
-                      style={{
-                        backgroundColor: newHabitCategory === cat.value ? CATEGORY_COLORS[cat.value] : 'transparent',
-                        borderColor: newHabitCategory === cat.value ? CATEGORY_COLORS[cat.value] : colors.border,
-
-                      }}
-                      onPress={() => setNewHabitCategory(cat.value)}
-                    >
-                      <Text
-                        className="text-sm"
-                        style={{ color: newHabitCategory === cat.value ? 'white' : colors.text }}
-                      >
-                        {cat.emoji} {cat.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                <View className="mb-6">
+                  <Text className="text-xs font-black uppercase tracking-widest mb-3 ml-1" style={{ color: colors.textSecondary }}>HABIT NAME</Text>
+                  <TextInput
+                    className="rounded-2xl p-5 text-lg font-bold"
+                    style={{
+                      backgroundColor: isDarkMode ? '#111827' : '#F8FAFC',
+                      color: colors.text,
+                      borderWidth: 1,
+                      borderColor: isDarkMode ? '#374151' : '#E2E8F0',
+                    }}
+                    placeholder="e.g. Morning Prayer"
+                    value={newHabitName}
+                    onChangeText={setNewHabitName}
+                    placeholderTextColor={colors.textSecondary}
+                    autoFocus={true}
+                  />
                 </View>
 
-                <View className="flex-row mb-2 mt-4">
+                <View className="mb-8">
+                  <Text className="text-xs font-black uppercase tracking-widest mb-4 ml-1" style={{ color: colors.textSecondary }}>SELECT CATEGORY</Text>
+                  <View className="flex-row flex-wrap">
+                    {CATEGORIES.map((cat) => (
+                      <TouchableOpacity
+                        key={cat.value}
+                        className="rounded-2xl px-4 py-3 mr-2 mb-2 items-center justify-center flex-row border"
+                        style={{
+                          backgroundColor: newHabitCategory === cat.value ? CATEGORY_COLORS[cat.value] : (isDarkMode ? '#111827' : 'white'),
+                          borderColor: newHabitCategory === cat.value ? CATEGORY_COLORS[cat.value] : (isDarkMode ? '#374151' : '#E2E8F0'),
+                          shadowColor: newHabitCategory === cat.value ? CATEGORY_COLORS[cat.value] : 'transparent',
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 8,
+                          elevation: newHabitCategory === cat.value ? 4 : 0,
+                        }}
+                        onPress={() => setNewHabitCategory(cat.value)}
+                      >
+                        <Text className="text-base mr-2">{cat.emoji}</Text>
+                        <Text
+                          className="text-[10px] font-black uppercase tracking-wider"
+                          style={{ color: newHabitCategory === cat.value ? 'white' : colors.text }}
+                        >
+                          {cat.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                <View className="flex-row mt-4">
                   <TouchableOpacity
-                    className="flex-1 py-4 rounded-xl mr-2 "
-                    style={{ backgroundColor: isDarkMode ? '#374151' : '#F3F4F6' }}
+                    className="flex-1 py-5 rounded-[24px] mr-3 items-center justify-center border"
+                    style={{
+                      backgroundColor: isDarkMode ? 'transparent' : '#F1F5F9',
+                      borderColor: isDarkMode ? '#374151' : 'transparent'
+                    }}
                     onPress={() => {
                       setShowModal(false);
                       setNewHabitName('');
                       setNewHabitCategory('other');
                     }}
                   >
-                    <Text className="text-base font-semibold text-center" style={{ color: colors.textSecondary }}>Cancel</Text>
+                    <Text className="text-base font-black uppercase tracking-widest" style={{ color: colors.textSecondary }}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    className="flex-1 py-4 rounded-xl ml-2"
-                    style={{ backgroundColor: colors.primary }}
+                    className="flex-1 py-5 rounded-[24px] items-center justify-center font-black"
+                    style={{
+                      backgroundColor: colors.primary,
+                      shadowColor: colors.primary,
+                      shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 12,
+                      elevation: 6,
+                    }}
                     onPress={handleAddHabit}
                   >
-                    <Text className="text-white text-base font-semibold text-center">Add Habit</Text>
+                    <Text className="text-white text-base font-black uppercase tracking-widest">Create</Text>
                   </TouchableOpacity>
                 </View>
               </View>
